@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internship Recommendation Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #00c4cc, #9b59b6);
+            color: #fff;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .form-container, .results-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: 0 auto 20px;
+            transition: transform 0.3s ease;
+        }
+        .form-container:hover, .results-container:hover {
+            transform: scale(1.02);
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: 600;
+            color: #ffeb3b;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #00e5ff;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #ff4081;
+            box-shadow: 0 0 10px #ff4081;
+        }
+        button {
+            background: #ff4081;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: #e91e63;
+            transform: translateY(-2px);
+        }
+        #results {
+            display: none;
+        }
+        .result-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 230, 255, 0.2);
+            border-radius: 8px;
+            border: 1px solid #00e5ff;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        .result-item:hover {
+            background: rgba(0, 230, 255, 0.4);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Internship Recommendation Engine</h1>
+    <div class="form-container">
+        <form id="profileForm">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="interests">Interests (e.g., coding, design, marketing):</label>
+            <input type="text" id="interests" name="interests" required>
+            
+            <label for="skills">Skills (e.g., Python, UI/UX, SEO):</label>
+            <input type="text" id="skills" name="skills" required>
+            
+            <label for="experience">Past Experience (e.g., projects, internships):</label>
+            <textarea id="experience" name="experience" required></textarea>
+            
+            <button type="submit">Get Recommendations</button>
+        </form>
+    </div>
+    <div class="results-container" id="results">
+        <h2>Recommended Internship Domains</h2>
+        <div id="recommendations"></div>
+    </div>
+
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const interests = document.getElementById('interests').value;
+            const skills = document.getElementById('skills').value;
+            const experience = document.getElementById('experience').value;
+            
+            if (!name || !interests || !skills || !experience) {
+                alert('Please fill out all fields.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interests, skills, experience })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.status);
+                }
+                
+                const data = await response.json();
+                const resultsDiv = document.getElementById('recommendations');
+                resultsDiv.innerHTML = '';
+                data.forEach(item => {
+                    const p = document.createElement('p');
+                    p.className = 'result-item';
+                    p.innerText = `${item[0]} (Match Score: ${(item[1] * 100).toFixed(1)}%)`;
+                    resultsDiv.appendChild(p);
+                });
+                document.getElementById('results').style.display = 'block';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
